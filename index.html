@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roguelike Practice Tool</title>
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+  <h1>Your Choices</h1>
+  <div>
+    <img id="image1" class="small-image" src="" alt="Image 1" width="50" height="50" onclick="showSmallPreview(this)">
+    <img id="image2" class="small-image" src="" alt="Image 2" width="50" height="50" onclick="showSmallPreview(this)">
+    <img id="image3" class="small-image" src="" alt="Image 3" width="50" height="50" onclick="showSmallPreview(this)">
+  </div>
+  
+  <!-- Container for small image previews at the bottom corner -->
+  <div id="smallImagePreviewContainer">
+    <!-- Small image previews will be added here dynamically -->
+  </div>
+
+  <button id="chooseButton" onclick="selectAndDisplayImages()">Roll</button>
+
+  <script src="script.js"></script>
+</body>
+</html>
