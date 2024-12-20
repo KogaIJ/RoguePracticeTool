@@ -13,6 +13,14 @@ const folderImageCount = {
   let imageLock = false;  // Lock for the individual images (to allow only 1 click per roll)
   let clickedImage = null; // Track the clicked image for the current roll
   let collectedItems = []; // Store collected items
+  let choGathMode = false; // Track if ChoGath mode is active
+  
+  // Function to toggle ChoGath mode
+  function toggleChoGathMode() {
+    choGathMode = !choGathMode; // Toggle ChoGath mode
+    document.getElementById("choGathModeButton").innerText = choGathMode ? "Disable ChoGath Mode" : "Enable ChoGath Mode";
+    alert(choGathMode ? "ChoGath mode enabled. ChoGath items are now accessible!" : "ChoGath mode disabled. ChoGath items are no longer accessible.");
+  }
   
   // Function to randomly select and display images
   function selectAndDisplayImages() {
@@ -24,11 +32,12 @@ const folderImageCount = {
     lockButton = true;
     document.getElementById("chooseButton").classList.add("disabled");
   
-    // Filter folders based on the roll count
+    // Filter folders based on the roll count and ChoGath mode
     const availableFolders = Object.keys(folderImageCount).filter(folder => {
       if (rollCount === 1) return folder === "Starter"; // Only allow "Starter" on roll 0
       if (folder === "Full-Item" && rollCount <= 6) return false; // Allow "Full-Item" only after roll 6
       if (folder === "Buff" && rollCount <= 7) return false; // Allow "Buff" only after roll 7
+      if (folder === "ChoGath-Extra" && !choGathMode) return false; // Allow "ChoGath-Extra" only in ChoGath mode
       return folder !== "Starter"; // Exclude "Starter" on subsequent rolls
     });
   
@@ -38,8 +47,14 @@ const folderImageCount = {
     // Get the maximum image count for the selected folder
     const maxImageCount = folderImageCount[selectedFolder];
   
-    // Randomly select 3 images (1 to maxImageCount) from the chosen folder
-    const images = Array.from({ length: 3 }, () => `${selectedFolder}/${Math.ceil(Math.random() * maxImageCount)}.png`);
+    // Generate 3 unique images not already in collectedItems
+    const images = [];
+    while (images.length < 3) {
+      const randomImage = `${selectedFolder}/${Math.ceil(Math.random() * maxImageCount)}.png`;
+      if (!collectedItems.includes(randomImage) && !images.includes(randomImage)) {
+        images.push(randomImage);
+      }
+    }
   
     // Update the lastRollImages with the new set
     lastRollImages = images;
@@ -91,17 +106,28 @@ const folderImageCount = {
   
   // Function to add a collected item to the bottom preview container
   function addCollectedItem(itemSrc) {
-    collectedItems.push(itemSrc); // Add to collected items array
+    // Check if the item already exists in the collectedItems array
+    if (!collectedItems.includes(itemSrc)) {
+      collectedItems.push(itemSrc); // Add to collected items array
+    }
   
+    updatePreviewContainer(); // Refresh the preview container
+  }
+  
+  // Function to update the small image preview container
+  function updatePreviewContainer() {
     const previewContainer = document.getElementById("smallImagePreviewContainer");
   
-    // Create a new image element for the preview
-    const previewImg = document.createElement("img");
-    previewImg.src = itemSrc;
-    previewImg.classList.add("small-image");
+    // Clear the container to prevent duplication
+    previewContainer.innerHTML = "";
   
-    // Append the preview image to the container
-    previewContainer.appendChild(previewImg);
+    // Add all current collected items to the preview container
+    collectedItems.forEach(itemSrc => {
+      const previewImg = document.createElement("img");
+      previewImg.src = itemSrc;
+      previewImg.classList.add("small-image");
+      previewContainer.appendChild(previewImg);
+    });
   }
   
   // Function to prompt the user to remove an existing item
@@ -137,10 +163,7 @@ const folderImageCount = {
   function replaceItem(index, newItemSrc) {
     collectedItems[index] = newItemSrc; // Replace the item in the array
   
-    const previewContainer = document.getElementById("smallImagePreviewContainer");
-    previewContainer.innerHTML = ""; // Clear the container
-  
-    // Re-add all items to the preview container
-    collectedItems.forEach(itemSrc => addCollectedItem(itemSrc));
+    // Refresh the preview container
+    updatePreviewContainer();
   }
   
